@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Button Style -->
+    <style name="ButtonBase">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">3dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:background">@drawable/button_background</item>
+    </style>
+
+    <!-- Primary Buttons (Numbers) -->
+    <style name="ButtonPrimary" parent="ButtonBase">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:background">@drawable/button_primary</item>
+    </style>
+
+    <!-- Secondary Buttons (Variables) -->
+    <style name="ButtonSecondary" parent="ButtonBase">
+        <item name="android:textColor">#00BCD4</item>
+        <item name="android:background">@drawable/button_secondary</item>
+    </style>
+
+    <!-- Tertiary Buttons (Functions) -->
+    <style name="ButtonTertiary" parent="ButtonBase">
+        <item name="android:textColor">#FFA726</item>
+        <item name="android:background">@drawable/button_tertiary</item>
+    </style>
+
+    <!-- Operator Buttons -->
+    <style name="ButtonOperator" parent="ButtonBase">
+        <item name="android:textColor">#FF5252</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:background">@drawable/button_operator</item>
+    </style>
+
+    <!-- Action Buttons -->
+    <style name="ButtonAction" parent="ButtonBase">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:background">@drawable/button_action</item>
+    </style>
+
+    <!-- Equals Button -->
+    <style name="ButtonEquals" parent="ButtonBase">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:background">@drawable/button_equals</item>
+    </style>
+</resources>
