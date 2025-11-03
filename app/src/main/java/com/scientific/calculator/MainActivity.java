@@ -259,16 +259,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        try {
-            AlgebraEngine engine = new AlgebraEngine();
-            String result = engine.derivative(currentExpression, "x");
-            expressionText.setText(formatWithSuperscript("d/dx: " + currentExpression));
-            displayText.setText(formatWithSuperscript(result));
-            currentExpression = result;
-            isNewCalculation = true;
-        } catch (Exception e) {
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        // Prompt user to select which variable to differentiate with respect to
+        String[] varArray = variables.toArray(new String[0]);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Differentiate with respect to:");
+        builder.setItems(varArray, (dialog, which) -> {
+            String variable = varArray[which];
+            try {
+                AlgebraEngine engine = new AlgebraEngine();
+                String result = engine.derivative(currentExpression, variable);
+                expressionText.setText(formatWithSuperscript("d/d" + variable + ": " + currentExpression));
+                displayText.setText(formatWithSuperscript(result));
+                currentExpression = result;
+                isNewCalculation = true;
+            } catch (Exception e) {
+                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+        builder.show();
     }
 
     private void performIntegration() {
@@ -280,18 +289,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
+        // Prompt user to select which variable to integrate with respect to
+        String[] varArray = variables.toArray(new String[0]);
 
-        try {
-            AlgebraEngine engine = new AlgebraEngine();
-            String result = engine.integrate(currentExpression, "x");
-            expressionText.setText(formatWithSuperscript("∫" + currentExpression + " dx"));
-            displayText.setText(formatWithSuperscript(result + "+C"));
-            currentExpression = result + "+C";
-            isNewCalculation = true;
-        } catch (Exception e) {
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Integrate with respect to:");
+        builder.setItems(varArray, (dialog, which) -> {
+            String variable = varArray[which];
+            try {
+                AlgebraEngine engine = new AlgebraEngine();
+                String result = engine.integrate(currentExpression, variable);
+                expressionText.setText(formatWithSuperscript("∫" + currentExpression + " d" + variable));
+                displayText.setText(formatWithSuperscript(result + "+C"));
+                currentExpression = result + "+C";
+                isNewCalculation = true;
+            } catch (Exception e) {
+                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+        builder.show();
     }
 
     private void promptForVariableValues(Set<String> variables) {
