@@ -101,6 +101,20 @@
                 android:text="Evaluate"
                 android:paddingHorizontal="10dp"
                 android:layout_marginEnd="4dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:id="@+id/btn_derivative"
+                style="@style/ButtonAction"
+                android:text="Derivative"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="4dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:id="@+id/btn_integration"
+                style="@style/ButtonAction"
+                android:text="Integration"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="4dp"/>
         </LinearLayout>
     </HorizontalScrollView>
 

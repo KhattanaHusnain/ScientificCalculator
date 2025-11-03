@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.btn_factor).setOnClickListener(this);
         findViewById(R.id.btn_solve).setOnClickListener(this);
         findViewById(R.id.btn_evaluate).setOnClickListener(this);
+        findViewById(R.id.btn_derivative).setOnClickListener(this);
+        findViewById(R.id.btn_integration).setOnClickListener(this);
     }
 
     @Override
@@ -74,7 +76,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (isNewCalculation && !isOperator(id) && id != R.id.btn_enter) {
             if (id != R.id.btn_simplify && id != R.id.btn_expand &&
-                    id != R.id.btn_factor && id != R.id.btn_solve && id != R.id.btn_evaluate) {
+                    id != R.id.btn_factor && id != R.id.btn_solve &&
+                    id != R.id.btn_evaluate && id != R.id.btn_derivative &&
+                    id != R.id.btn_integration) {
                 currentExpression = "";
                 isNewCalculation = false;
             }
@@ -114,6 +118,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else if (id == R.id.btn_factor) performFactor();
         else if (id == R.id.btn_solve) performSolve();
         else if (id == R.id.btn_evaluate) performEvaluate();
+        else if (id == R.id.btn_derivative) performDerivative();
+        else if (id == R.id.btn_integration) performIntegration();
 
         updateDisplay();
     }
@@ -242,6 +248,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         promptForVariableValues(variables);
+    }
+
+    private void performDerivative() {
+        if (currentExpression.isEmpty()) return;
+
+        Set<String> variables = extractVariables(currentExpression);
+        if (variables.isEmpty()) {
+            Toast.makeText(this, "No variables found in expression", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            AlgebraEngine engine = new AlgebraEngine();
+            String result = engine.derivative(currentExpression, "x");
+            expressionText.setText(formatWithSuperscript("d/dx: " + currentExpression));
+            displayText.setText(formatWithSuperscript(result));
+            currentExpression = result;
+            isNewCalculation = true;
+        } catch (Exception e) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void performIntegration() {
+        if (currentExpression.isEmpty()) return;
+
+        Set<String> variables = extractVariables(currentExpression);
+        if (variables.isEmpty()) {
+            Toast.makeText(this, "No variables found in expression", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        try {
+            AlgebraEngine engine = new AlgebraEngine();
+            String result = engine.integrate(currentExpression, "x");
+            expressionText.setText(formatWithSuperscript("∫" + currentExpression + " dx"));
+            displayText.setText(formatWithSuperscript(result + "+C"));
+            currentExpression = result + "+C";
+            isNewCalculation = true;
+        } catch (Exception e) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
     }
 
     private void promptForVariableValues(Set<String> variables) {
@@ -711,9 +761,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (ac % i == 0) {
                     long j = ac / i;
                     if (i + j == b) {
-                        // Factor by grouping: ax^2 + ix + jx + c
-                        // = x(ax + i) + (jx + c)/x ... this gets complex
-
                         // Try simpler approach: check if it factors nicely
                         for (long p = -Math.abs(a); p <= Math.abs(a); p++) {
                             if (p == 0) continue;
@@ -1079,6 +1126,90 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             return evaluateNumeric(expr);
+        }
+
+        public String derivative(String expr, String variable) {
+            expr = normalizeExpression(expr);
+
+            // Parse the expression into terms
+            List<Term> terms = parseTerms(expr);
+            List<Term> derivativeTerms = new ArrayList<>();
+
+            for (Term term : terms) {
+                Term derivTerm = differentiateTerm(term, variable);
+                if (derivTerm != null) {
+                    derivativeTerms.add(derivTerm);
+                }
+            }
+
+            if (derivativeTerms.isEmpty()) {
+                return "0";
+            }
+
+            Map<String, Double> combined = combineTerms(derivativeTerms);
+            return buildExpression(combined);
+        }
+
+        private Term differentiateTerm(Term term, String variable) {
+            // If the term doesn't contain the variable, derivative is 0
+            if (!term.variables.containsKey(variable)) {
+                return null;
+            }
+
+            int power = term.variables.get(variable);
+
+            // Power rule: d/dx(ax^n) = n*a*x^(n-1)
+            Term result = new Term();
+            result.coefficient = term.coefficient * power;
+            result.variables = new HashMap<>(term.variables);
+
+            // Reduce the power by 1
+            if (power == 1) {
+                result.variables.remove(variable);
+            } else {
+                result.variables.put(variable, power - 1);
+            }
+
+            return result;
+        }
+
+        public String integrate(String expr, String variable) {
+            expr = normalizeExpression(expr);
+
+            // Parse the expression into terms
+            List<Term> terms = parseTerms(expr);
+            List<Term> integralTerms = new ArrayList<>();
+
+            for (Term term : terms) {
+                Term intTerm = integrateTerm(term, variable);
+                if (intTerm != null) {
+                    integralTerms.add(intTerm);
+                } else {
+                    throw new RuntimeException("Cannot integrate this expression");
+                }
+            }
+
+            Map<String, Double> combined = combineTerms(integralTerms);
+            return buildExpression(combined);
+        }
+
+        private Term integrateTerm(Term term, String variable) {
+            // Power rule for integration: ∫ax^n dx = a*x^(n+1)/(n+1)
+            Term result = new Term();
+            result.variables = new HashMap<>(term.variables);
+
+            int currentPower = term.variables.getOrDefault(variable, 0);
+            int newPower = currentPower + 1;
+
+            // Check for special case: ∫1/x dx (would need logarithm)
+            if (newPower == 0) {
+                throw new RuntimeException("Integration of 1/x requires logarithm (not supported)");
+            }
+
+            result.coefficient = term.coefficient / newPower;
+            result.variables.put(variable, newPower);
+
+            return result;
         }
 
         private String normalizeExpression(String expr) {
